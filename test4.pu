@@ -1,0 +1,82 @@
+@startuml シーケンス図_サンプル
+title シーケンス図_サンプル
+
+/'
+シーケンス図サンプル
+ここではサンプルを記載します
+'/
+
+' フッターを隠せる
+hide footbox
+
+' actorで人型、Participantでボックスを定義
+' asで別名を定義、処理の中で利用できる
+actor user
+Participant frontend as FE
+Participant backend as BE
+Participant database as DB
+Participant 外部API as API
+
+' ==でイベントごとにシーケンスを分割
+== 初期表示 ==
+' autonumber：処理に番号を自動でつけられる、
+' イベントの初めに定義すればそこから番号を付与
+autonumber
+
+user -> FE : 処理開始
+' activate、deactivateで処理の開始終了を意味
+activate FE
+
+    FE -> BE : request(GET: ID、年月)
+    activate BE
+
+        BE -> DB :request(in : ID、年月)
+        ' note でAPI名や一言メモを残す
+        note right
+            履歴データの取得
+        end note
+
+        activate DB
+        DB -> BE :response(out: 履歴データ)
+        deactivate DB
+        
+        BE -> API : request(GET: ID、年月)
+        note right
+            外部APIデータの取得
+        end note
+
+        activate API
+        API -> BE : response(外部データ)
+        deactivate API
+
+        BE -> BE : チェック処理
+        note right
+            スプレッドシート参照
+        end note
+    BE -> FE : response
+    deactivate BE
+
+FE -> user : 処理終了
+deactivate FE
+
+
+== 登録処理 ==
+autonumber
+
+user -> FE : 登録開始
+activate FE
+
+    FE -> BE : request(GET: ID、年月、データ)
+    activate BE
+
+        BE -> DB : request(in :ID、年月、データ)
+        activate DB
+        DB -> BE : response
+        deactivate DB
+
+    BE -> FE : response
+    deactivate BE
+FE -> user : 登録終了
+deactivate FE
+
+@enduml
